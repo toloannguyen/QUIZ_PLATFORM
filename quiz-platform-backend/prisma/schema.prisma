@@ -1,0 +1,223 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SHORT_ANSWER
+  ESSAY
+}
+
+enum SubmissionStatus {
+  PENDING
+  AUTO_GRADED
+  REVIEWED
+  COMPLETED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+
+  // Teacher
+  courses   Course[]
+  exams     Exam[]
+
+  // Student
+  submissions Submission[]
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  teacherId   Int
+  teacher      User @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  lectures    Lecture[]
+  exams       Exam[]
+
+  @@index([teacherId])
+}
+
+model Lecture {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  courseId    Int
+  course       Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  materials   Material[]
+
+  @@index([courseId])
+}
+
+model Material {
+  id          Int      @id @default(autoincrement())
+  title       String
+  fileName    String
+  fileUrl     String
+  fileType    String
+  uploadedAt  DateTime @default(now())
+
+  lectureId   Int
+  lecture      Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@index([lectureId])
+}
+
+model Exam {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String?  @db.Text
+
+  duration      Int
+  dueDate       DateTime
+
+  totalQuestion Int?
+  totalScore    Float?
+
+  createdAt     DateTime @default(now())
+
+  teacherId      Int
+  courseId       Int
+
+  teacher        User @relation(fields: [teacherId], references: [id])
+  course         Course @relation(fields: [courseId], references: [id])
+
+  questions      Question[]
+  submissions    Submission[]
+
+  @@index([teacherId])
+  @@index([courseId])
+}
+
+model Question {
+  id             Int      @id @default(autoincrement())
+
+  examId         Int
+
+  orderNumber    Int
+  part           Int
+
+  type           QuestionType
+
+  title          String?
+  content        String   @db.LongText
+
+  maxScore       Float
+
+  correctAnswer  String?  @db.LongText
+
+  explanation    String?  @db.Text
+
+  exam           Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  options        QuestionOption[]
+
+  answers        SubmissionAnswer[]
+
+  @@index([examId])
+}
+
+model QuestionOption {
+
+  id          Int @id @default(autoincrement())
+
+  questionId  Int
+
+  optionText  String
+
+  isCorrect   Boolean
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  answers SubmissionAnswer[]
+
+  @@index([questionId])
+}
+
+model Submission {
+
+  id             Int @id @default(autoincrement())
+
+  examId         Int
+
+  studentId      Int
+
+  attempt        Int @default(1)
+
+  startedAt      DateTime?
+
+  submittedAt    DateTime @default(now())
+
+  autoScore      Float?
+
+  teacherScore   Float?
+
+  finalScore     Float?
+
+  status         SubmissionStatus @default(PENDING)
+
+  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  answers SubmissionAnswer[]
+
+  @@index([examId])
+  @@index([studentId])
+}
+
+model SubmissionAnswer {
+
+  id Int @id @default(autoincrement())
+
+  submissionId Int
+
+  questionId Int
+
+  selectedOptionId Int?
+
+  answerText String? @db.LongText
+
+  autoScore Float?
+
+  teacherScore Float?
+
+  teacherFeedback String? @db.Text
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+
+  @@index([submissionId])
+  @@index([questionId])
+  @@index([selectedOptionId])
+}

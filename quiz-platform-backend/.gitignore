@@ -1,0 +1,35 @@
+# node_modules
+# # Keep environment variables out of version control
+# .env
+
+/src/generated/prisma
+
+# 1. Thư viện Node.js (KHÔNG BAO GIỜ đẩy thư mục này lên Git vì nó rất nặng và có thể tự tải lại được)
+node_modules/
+
+# 2. Các file cấu hình biến môi trường (BẢO MẬT: Chứa mật khẩu DB, JWT Secret)
+.env
+.env.test
+.env.production
+
+# 3. Các file log (Nhật ký lỗi của hệ thống)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# 4. Các file hệ thống rác của hệ điều hành macOS (Bạn đang dùng MacBook nên chắc chắn sẽ tự sinh ra file này)
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 5. Cấu hình cá nhân của các trình soạn thảo code (VS Code, WebStorm)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+
+# 6. Các thư mục build/deploy sau này (Nếu có)
+dist/
+build/
