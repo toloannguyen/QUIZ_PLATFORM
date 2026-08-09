@@ -1,0 +1,31 @@
+reference_text,student_answer,expected_level
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,Nước sôi ở 100 độ C khi áp suất bình thường,Very Good
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,Nước sôi khi đun nóng đủ lâu,Partially Relevant
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,Nước không sôi ở 100 độ C,Not Related
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,,Not Related
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Cây dùng ánh sáng để tạo ra thức ăn từ CO2 và nước,Very Good
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Cây cần nước để sống và phát triển,Partially Relevant
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Con mèo là động vật có vú,Not Related
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Cây không quang hợp vào ban đêm,Partially Relevant
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,Trái Đất di chuyển vòng quanh Mặt Trời,Very Good
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,Mặt Trời quay quanh Trái Đất,Not Related
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,Trái Đất có hình tròn,Not Related
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,,Not Related
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Vật có khối lượng thì hút nhau,Very Good
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Trái Đất hút mọi vật xuống dưới,Partially Relevant
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Nam châm hút sắt,Not Related
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Không có lực nào giữa hai vật có khối lượng,Not Related
+DNA mang thông tin di truyền của sinh vật,DNA chứa mã di truyền quy định đặc điểm sinh vật,Very Good
+DNA mang thông tin di truyền của sinh vật,DNA là một phần của tế bào,Partially Relevant
+DNA mang thông tin di truyền của sinh vật,Protein cấu tạo nên cơ thể,Not Related
+DNA mang thông tin di truyền của sinh vật,,Not Related
+Áp suất khí quyển giảm dần khi lên cao,Càng lên cao áp suất không khí càng thấp,Very Good
+Áp suất khí quyển giảm dần khi lên cao,Trên núi cao không khí loãng hơn,Partially Relevant
+Áp suất khí quyển giảm dần khi lên cao,Áp suất khí quyển tăng khi lên cao,Not Related
+Áp suất khí quyển giảm dần khi lên cao,Nhiệt độ giảm khi lên cao,Not Related
+Kim loại dẫn điện tốt vì có electron tự do,Electron tự do trong kim loại giúp dẫn điện,Very Good
+Kim loại dẫn điện tốt vì có electron tự do,Kim loại có thể dẫn điện,Partially Relevant
+Kim loại dẫn điện tốt vì có electron tự do,Gỗ không dẫn điện,Not Related
+Kim loại dẫn điện tốt vì có electron tự do,,Not Related
+Hệ tuần hoàn vận chuyển máu đi khắp cơ thể nhờ tim co bóp,Tim bơm máu đi nuôi cơ thể,Very Good
+Hệ tuần hoàn vận chuyển máu đi khắp cơ thể nhờ tim co bóp,Tim không tham gia vào việc vận chuyển máu,Not Related

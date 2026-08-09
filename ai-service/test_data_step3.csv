@@ -1,0 +1,31 @@
+reference_text,student_answer,expected_level,reference_text_clean,student_answer_clean
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,Nước sôi ở 100 độ C khi áp suất bình thường,Very Good,nước sôi ở 100 độ c tại áp suất khí quyển tiêu chuẩn,nước sôi ở 100 độ c khi áp suất bình thường
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,Nước sôi khi đun nóng đủ lâu,Partially Relevant,nước sôi ở 100 độ c tại áp suất khí quyển tiêu chuẩn,nước sôi khi đun nóng đủ lâu
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,Nước không sôi ở 100 độ C,Not Related,nước sôi ở 100 độ c tại áp suất khí quyển tiêu chuẩn,nước không sôi ở 100 độ c
+Nước sôi ở 100 độ C tại áp suất khí quyển tiêu chuẩn,,Not Related,nước sôi ở 100 độ c tại áp suất khí quyển tiêu chuẩn,
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Cây dùng ánh sáng để tạo ra thức ăn từ CO2 và nước,Very Good,quang hợp là quá trình cây xanh chuyển hóa co2 và nước thành glucose nhờ ánh sáng,cây dùng ánh sáng để tạo ra thức ăn từ co2 và nước
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Cây cần nước để sống và phát triển,Partially Relevant,quang hợp là quá trình cây xanh chuyển hóa co2 và nước thành glucose nhờ ánh sáng,cây cần nước để sống và phát triển
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Con mèo là động vật có vú,Not Related,quang hợp là quá trình cây xanh chuyển hóa co2 và nước thành glucose nhờ ánh sáng,con mèo là động vật có vú
+Quang hợp là quá trình cây xanh chuyển hóa CO2 và nước thành glucose nhờ ánh sáng,Cây không quang hợp vào ban đêm,Partially Relevant,quang hợp là quá trình cây xanh chuyển hóa co2 và nước thành glucose nhờ ánh sáng,cây không quang hợp vào ban đêm
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,Trái Đất di chuyển vòng quanh Mặt Trời,Very Good,trái đất quay quanh mặt trời theo quỹ đạo hình elip,trái đất di chuyển vòng quanh mặt trời
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,Mặt Trời quay quanh Trái Đất,Not Related,trái đất quay quanh mặt trời theo quỹ đạo hình elip,mặt trời quay quanh trái đất
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,Trái Đất có hình tròn,Not Related,trái đất quay quanh mặt trời theo quỹ đạo hình elip,trái đất có hình tròn
+Trái Đất quay quanh Mặt Trời theo quỹ đạo hình elip,,Not Related,trái đất quay quanh mặt trời theo quỹ đạo hình elip,
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Vật có khối lượng thì hút nhau,Very Good,lực hấp dẫn là lực hút giữa hai vật có khối lượng,vật có khối lượng thì hút nhau
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Trái Đất hút mọi vật xuống dưới,Partially Relevant,lực hấp dẫn là lực hút giữa hai vật có khối lượng,trái đất hút mọi vật xuống dưới
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Nam châm hút sắt,Not Related,lực hấp dẫn là lực hút giữa hai vật có khối lượng,nam châm hút sắt
+Lực hấp dẫn là lực hút giữa hai vật có khối lượng,Không có lực nào giữa hai vật có khối lượng,Not Related,lực hấp dẫn là lực hút giữa hai vật có khối lượng,không có lực nào giữa hai vật có khối lượng
+DNA mang thông tin di truyền của sinh vật,DNA chứa mã di truyền quy định đặc điểm sinh vật,Very Good,dna mang thông tin di truyền của sinh vật,dna chứa mã di truyền quy định đặc điểm sinh vật
+DNA mang thông tin di truyền của sinh vật,DNA là một phần của tế bào,Partially Relevant,dna mang thông tin di truyền của sinh vật,dna là một phần của tế bào
+DNA mang thông tin di truyền của sinh vật,Protein cấu tạo nên cơ thể,Not Related,dna mang thông tin di truyền của sinh vật,protein cấu tạo nên cơ thể
+DNA mang thông tin di truyền của sinh vật,,Not Related,dna mang thông tin di truyền của sinh vật,
+Áp suất khí quyển giảm dần khi lên cao,Càng lên cao áp suất không khí càng thấp,Very Good,áp suất khí quyển giảm dần khi lên cao,càng lên cao áp suất không khí càng thấp
+Áp suất khí quyển giảm dần khi lên cao,Trên núi cao không khí loãng hơn,Partially Relevant,áp suất khí quyển giảm dần khi lên cao,trên núi cao không khí loãng hơn
+Áp suất khí quyển giảm dần khi lên cao,Áp suất khí quyển tăng khi lên cao,Not Related,áp suất khí quyển giảm dần khi lên cao,áp suất khí quyển tăng khi lên cao
+Áp suất khí quyển giảm dần khi lên cao,Nhiệt độ giảm khi lên cao,Not Related,áp suất khí quyển giảm dần khi lên cao,nhiệt độ giảm khi lên cao
+Kim loại dẫn điện tốt vì có electron tự do,Electron tự do trong kim loại giúp dẫn điện,Very Good,kim loại dẫn điện tốt vì có electron tự do,electron tự do trong kim loại giúp dẫn điện
+Kim loại dẫn điện tốt vì có electron tự do,Kim loại có thể dẫn điện,Partially Relevant,kim loại dẫn điện tốt vì có electron tự do,kim loại có thể dẫn điện
+Kim loại dẫn điện tốt vì có electron tự do,Gỗ không dẫn điện,Not Related,kim loại dẫn điện tốt vì có electron tự do,gỗ không dẫn điện
+Kim loại dẫn điện tốt vì có electron tự do,,Not Related,kim loại dẫn điện tốt vì có electron tự do,
+Hệ tuần hoàn vận chuyển máu đi khắp cơ thể nhờ tim co bóp,Tim bơm máu đi nuôi cơ thể,Very Good,hệ tuần hoàn vận chuyển máu đi khắp cơ thể nhờ tim co bóp,tim bơm máu đi nuôi cơ thể
+Hệ tuần hoàn vận chuyển máu đi khắp cơ thể nhờ tim co bóp,Tim không tham gia vào việc vận chuyển máu,Not Related,hệ tuần hoàn vận chuyển máu đi khắp cơ thể nhờ tim co bóp,tim không tham gia vào việc vận chuyển máu
