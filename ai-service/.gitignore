@@ -1,0 +1,32 @@
+cat << 'EOF' > .gitignore
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ChromaDB (dữ liệu, không phải code - tái tạo được từ PDF gốc)
+chroma_db/
+
+# Biến môi trường / secrets (nếu sau này thêm API key)
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+
+# Output/build
+dist/
+build/
+*.egg
+EOF

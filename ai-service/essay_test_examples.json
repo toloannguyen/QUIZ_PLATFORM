@@ -1,0 +1,22 @@
+[
+  {
+    "student_answer": "Trí tuệ nhân tạo AI hướng đến xây dựng hệ thống có khả năng làm việc như con người, chẳng hạn nhận dạng hình ảnh, hiểu ngôn ngữ, dự đoán. Machine Learning là nhánh của AI giúp hệ thống học từ dữ liệu để đưa ra dự đoán.",
+    "expected": "Very Good",
+    "note": "Câu trả lời đầy đủ, chi tiết"
+  },
+  {
+    "student_answer": "Máy tính là thiết bị dùng để chơi game và xem phim giải trí",
+    "expected": "Not Related",
+    "note": "Sai/lạc đề nhưng similarity bị đẩy cao do trùng từ vựng chung"
+  },
+  {
+    "student_answer": "Điện toán đám mây giúp doanh nghiệp không cần đầu tư hạ tầng vật lý",
+    "expected": "Very Good",
+    "note": "Paraphrase đúng, ban đầu bị lớp phủ định chấm sai — đã sửa bằng cách tắt kiểm tra xung đột cho luồng essay"
+  },
+  {
+    "student_answer": "Cách nấu phở bò truyền thống cần những nguyên liệu gì",
+    "expected": "Not Related",
+    "note": "Hoàn toàn ngoài phạm vi tài liệu"
+  }
+]
