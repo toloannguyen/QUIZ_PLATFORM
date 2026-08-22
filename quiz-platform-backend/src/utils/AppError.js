@@ -1,13 +1,17 @@
+/**
+ * Error class nghiệp vụ dùng chung cho toàn bộ Backend.
+ * errorHandler.js đã nhận diện sẵn `statusCode` và `field` nên mọi service
+ * chỉ cần throw new AppError(...) là tự động ra đúng format response.
+ *
+ * authService.js hiện đang dùng AuthError riêng — vẫn chạy tốt, không bắt buộc đổi,
+ * nhưng từ CourseService trở đi nên dùng chung AppError này để đỡ lặp code.
+ */
 class AppError extends Error {
-  constructor(message, statusCode) {
+  constructor(message, field = null, statusCode = 400) {
     super(message);
-
+    this.name = 'AppError';
+    this.field = field;
     this.statusCode = statusCode;
-    // Nếu statusCode bắt đầu bằng 4 (4xx) thì là client error, ngược lại là server error (5xx)
-    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
-    this.isOperational = true; // Phân biệt lỗi do chúng ta chủ động bắt (Operational) hay lỗi bất ngờ do bug code
-
-    Error.captureStackTrace(this, this.constructor);
   }
 }
 

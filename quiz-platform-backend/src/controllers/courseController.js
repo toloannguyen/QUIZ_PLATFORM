@@ -1,42 +1,28 @@
 const courseService = require('../services/courseService');
-const catchAsync = require('../utils/catchAsync');
 
-const createCourse = catchAsync(async (req, res, next) => {
-  // Lấy req.user.id (ID của giáo viên đang đăng nhập) do authMiddleware truyền sang
-  const teacherId = req.user.id; 
-  const result = await courseService.createCourse(teacherId, req.body);
+async function list(req, res) {
+  const courses = await courseService.listCourses(req.user);
+  res.json(courses);
+}
 
-  res.status(201).json({
-    status: 'success',
-    data: { course: result },
-  });
-});
+async function getOne(req, res) {
+  const course = await courseService.getCourseById(req.params.id);
+  res.json(course);
+}
 
-const getAllCourses = catchAsync(async (req, res, next) => {
-  const result = await courseService.getAllCourses();
+async function create(req, res) {
+  const course = await courseService.createCourse(req.body, req.user);
+  res.status(201).json(course);
+}
 
-  res.status(200).json({
-    status: 'success',
-    results: result.length,
-    data: { courses: result },
-  });
-});
+async function update(req, res) {
+  const course = await courseService.updateCourse(req.params.id, req.body);
+  res.json(course);
+}
 
-const createLecture = catchAsync(async (req, res, next) => {
-  const teacherId = req.user.id;
-  // Lấy courseId từ trên thanh địa chỉ URL (ví dụ: /api/v1/courses/5/lectures)
-  const courseId = parseInt(req.params.courseId, 10); 
+async function remove(req, res) {
+  await courseService.deleteCourse(req.params.id);
+  res.status(204).send();
+}
 
-  const result = await courseService.createLecture(teacherId, courseId, req.body);
-
-  res.status(201).json({
-    status: 'success',
-    data: { lecture: result },
-  });
-});
-
-module.exports = {
-  createCourse,
-  getAllCourses,
-  createLecture,
-};
+module.exports = { list, getOne, create, update, remove };

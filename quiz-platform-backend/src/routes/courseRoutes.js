@@ -1,22 +1,45 @@
 const express = require('express');
-const courseController = require('../controllers/courseController');
-const authMiddleware = require('../middlewares/authMiddleware');
-
 const router = express.Router();
 
-// Tất cả các route bên dưới đều phải có token (phải đăng nhập)
-router.use(authMiddleware.protect);
+const courseController = require('../controllers/courseController');
+const courseRepository = require('../repositories/courseRepository');
+const { createCourseSchema, updateCourseSchema } = require('../validations/courseValidation');
 
-// Route GET: Ai cũng xem được (Student, Teacher)
-// Route POST: Chỉ TEACHER mới tạo được khóa học
-router
-  .route('/')
-  .get(courseController.getAllCourses)
-  .post(authMiddleware.restrictTo('TEACHER'), courseController.createCourse);
+const authenticate = require('../middlewares/authMiddleware');
+const requireRole = require('../middlewares/roleMiddleware');
+const requireOwner = require('../middlewares/resourceOwnership');
+const validateRequest = require('../middlewares/validateRequest');
+const asyncHandler = require('../middlewares/asyncHandler');
 
-// Route POST: Chỉ TEACHER mới thêm được bài giảng
-router
-  .route('/:courseId/lectures')
-  .post(authMiddleware.restrictTo('TEACHER'), courseController.createLecture);
+// Mọi route Course đều cần đăng nhập
+router.use(authenticate);
+
+// Ai đã đăng nhập cũng xem được danh sách/chi tiết (TEACHER thấy khóa học của mình, ADMIN/STUDENT thấy tất cả)
+router.get('/', asyncHandler(courseController.list));
+router.get('/:id', asyncHandler(courseController.getOne));
+
+// Chỉ TEACHER/ADMIN được tạo — không cần check ownership vì đang TẠO MỚI, chưa có chủ
+router.post(
+  '/',
+  requireRole('TEACHER', 'ADMIN'),
+  validateRequest(createCourseSchema),
+  asyncHandler(courseController.create)
+);
+
+// Sửa/xóa: phải là TEACHER/ADMIN VÀ phải là chủ sở hữu (ADMIN được bỏ qua check chủ sở hữu)
+router.patch(
+  '/:id',
+  requireRole('TEACHER', 'ADMIN'),
+  requireOwner((req) => courseRepository.getOwnerId(req.params.id)),
+  validateRequest(updateCourseSchema),
+  asyncHandler(courseController.update)
+);
+
+router.delete(
+  '/:id',
+  requireRole('TEACHER', 'ADMIN'),
+  requireOwner((req) => courseRepository.getOwnerId(req.params.id)),
+  asyncHandler(courseController.remove)
+);
 
 module.exports = router;

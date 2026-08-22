@@ -1,40 +1,28 @@
 const examService = require('../services/examService');
-const catchAsync = require('../utils/catchAsync');
 
-const createExam = catchAsync(async (req, res, next) => {
-  const teacherId = req.user.id;
-  const result = await examService.createExam(teacherId, req.body);
+async function list(req, res) {
+  const exams = await examService.listExams(req.user, { courseId: req.query.courseId });
+  res.json(exams);
+}
 
-  res.status(201).json({
-    status: 'success',
-    data: { exam: result },
-  });
-});
+async function getOne(req, res) {
+  const exam = await examService.getExamById(req.params.id);
+  res.json(exam);
+}
 
-const createQuestion = catchAsync(async (req, res, next) => {
-  const teacherId = req.user.id;
-  const examId = parseInt(req.params.examId, 10);
-  
-  const result = await examService.createQuestion(teacherId, examId, req.body);
+async function create(req, res) {
+  const exam = await examService.createExam(req.body, req.user);
+  res.status(201).json(exam);
+}
 
-  res.status(201).json({
-    status: 'success',
-    data: { question: result },
-  });
-});
-// Phase 5:
-const getExam = catchAsync(async (req, res, next) => {
-  const examId = parseInt(req.params.id, 10);
-  
-  const result = await examService.getExamById(examId);
+async function update(req, res) {
+  const exam = await examService.updateExam(req.params.id, req.body);
+  res.json(exam);
+}
 
-  res.status(200).json({
-    status: 'success',
-    data: { exam: result },
-  });
-});
-module.exports = {
-  createExam,
-  createQuestion,
-  getExam, // Thêm dòng này
-};
+async function remove(req, res) {
+  await examService.deleteExam(req.params.id);
+  res.status(204).send();
+}
+
+module.exports = { list, getOne, create, update, remove };

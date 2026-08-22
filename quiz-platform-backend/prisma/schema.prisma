@@ -77,15 +77,19 @@ model Lecture {
 }
 
 model Material {
-  id          Int      @id @default(autoincrement())
-  title       String
-  fileName    String
-  fileUrl     String
-  fileType    String
-  uploadedAt  DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  title        String
+  fileName     String
+  fileUrl      String
+  fileType     String
+  uploadedAt   DateTime @default(now())
+  lectureId    Int
 
-  lectureId   Int
-  lecture      Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  aiProcessed  Boolean  @default(false)
+  aiChunkCount Int?
+  aiError      String?  @db.Text
+
+  lecture      Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 
   @@index([lectureId])
 }
@@ -194,28 +198,23 @@ model Submission {
 }
 
 model SubmissionAnswer {
-
-  id Int @id @default(autoincrement())
-
-  submissionId Int
-
-  questionId Int
-
+  id               Int      @id @default(autoincrement())
+  submissionId     Int
+  questionId       Int
   selectedOptionId Int?
+  answerText       String?  @db.LongText
+  autoScore        Float?
+  teacherScore     Float?
+  teacherFeedback  String?  @db.Text
 
-  answerText String? @db.LongText
+  aiLabel          String?
+  aiSimilarity     Float?
+  aiReason         String?  @db.Text
+  aiReferenceInfo  Json?
 
-  autoScore Float?
-
-  teacherScore Float?
-
-  teacherFeedback String? @db.Text
-
-  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+  submission       Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question         Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
 
   @@index([submissionId])
   @@index([questionId])

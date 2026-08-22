@@ -1,89 +1,61 @@
-const { PrismaClient } = require('@prisma/client');
+const examRepository = require('../repositories/examRepository');
+const courseRepository = require('../repositories/courseRepository');
 const AppError = require('../utils/AppError');
 
-const prisma = new PrismaClient();
+async function listExams(user, filters = {}) {
+  if (user.role === 'TEACHER') {
+    return examRepository.findMany({ teacherId: user.id, courseId: filters.courseId });
+  }
+  // ADMIN/STUDENT thấy tất cả (lọc theo courseId nếu có truyền query)
+  return examRepository.findMany({ courseId: filters.courseId });
+}
 
-// 1. Tạo đề thi mới
-const createExam = async (teacherId, data) => {
-  const { courseId, title, description, duration, dueDate } = data;
-
-  // Kiểm tra xem khóa học có thuộc về giáo viên này không
-  const course = await prisma.course.findUnique({ where: { id: courseId } });
-  if (!course) throw new AppError('Không tìm thấy khóa học!', 404);
-  if (course.teacherId !== teacherId) throw new AppError('Bạn không có quyền thêm đề thi vào khóa học này!', 403);
-
-  const newExam = await prisma.exam.create({
-    data: {
-      title,
-      description,
-      duration,
-      dueDate: new Date(dueDate), // Chuyển chuỗi ngày tháng từ client thành object Date
-      teacherId,
-      courseId,
-    },
-  });
-
-  return newExam;
-};
-
-// 2. Thêm câu hỏi và đáp án vào đề thi (Sử dụng Nested Writes)
-const createQuestion = async (teacherId, examId, data) => {
-  const { type, content, maxScore, orderNumber, part, options } = data;
-
-  // Kiểm tra quyền sở hữu đề thi
-  const exam = await prisma.exam.findUnique({ where: { id: examId } });
-  if (!exam) throw new AppError('Không tìm thấy đề thi!', 404);
-  if (exam.teacherId !== teacherId) throw new AppError('Bạn không có quyền sửa đề thi này!', 403);
-
-  // Tạo Câu hỏi VÀ Các lựa chọn (Options) cùng một lúc
-  const newQuestion = await prisma.question.create({
-    data: {
-      examId,
-      type, // Ví dụ: 'MULTIPLE_CHOICE'
-      content,
-      maxScore,
-      orderNumber: orderNumber || 1,
-      part: part || 1,
-      // Nested write: Tạo các bản ghi QuestionOption gắn liền với Question này
-      options: {
-        create: options, 
-      },
-    },
-    // Include để kết quả trả về hiển thị luôn cả mảng options vừa tạo
-    include: {
-      options: true,
-    },
-  });
-
-  return newQuestion;
-};
-
-// phase 5: Lấy chi tiết đề thi kèm câu hỏi (Bảo mật đáp án)
-const getExamById = async (examId) => {
-  const exam = await prisma.exam.findUnique({
-    where: { id: examId },
-    include: {
-      questions: {
-        include: {
-          // BẢO MẬT: Dùng 'select' thay vì 'include: true' để chỉ lấy các trường an toàn
-          options: {
-            select: {
-              id: true,
-              optionText: true,
-              // Cố tình bỏ qua trường isCorrect để Frontend không bao giờ thấy được
-            }
-          }
-        }
-      }
-    }
-  });
-
-  if (!exam) throw new AppError('Không tìm thấy đề thi!', 404);
-
+async function getExamById(id) {
+  const exam = await examRepository.findById(id);
+  if (!exam) {
+    throw new AppError('Không tìm thấy đề thi', null, 404);
+  }
   return exam;
-};
-module.exports = {
-  createExam,
-  createQuestion,
-  getExamById, // Thêm dòng này
-};
+}
+
+/**
+ * Tạo Exam mới. Điểm quan trọng: courseId truyền vào phải thuộc đúng giáo viên
+ * đang tạo — nếu không sẽ tạo được đề thi gắn vào khóa học của người khác.
+ * requireOwner middleware KHÔNG bắt được lỗi này vì lúc tạo Exam chưa tồn tại,
+ * nên phải tự check ở đây, dựa trên teacherId của Course.
+ */
+async function createExam(data, user) {
+  const course = await courseRepository.findById(data.courseId);
+  if (!course) {
+    throw new AppError('Khóa học không tồn tại', 'courseId', 404);
+  }
+  if (user.role !== 'ADMIN' && course.teacherId !== user.id) {
+    throw new AppError('Bạn không phải chủ sở hữu khóa học này, không thể tạo đề thi', 'courseId', 403);
+  }
+
+  return examRepository.create({
+    title: data.title,
+    description: data.description,
+    duration: data.duration,
+    dueDate: new Date(data.dueDate),
+    courseId: Number(data.courseId),
+    teacherId: user.id,
+  });
+}
+
+async function updateExam(id, data) {
+  await getExamById(id); // ném 404 nếu không tồn tại
+
+  const payload = { ...data };
+  if (payload.dueDate) {
+    payload.dueDate = new Date(payload.dueDate);
+  }
+  return examRepository.update(id, payload);
+}
+
+async function deleteExam(id) {
+  await getExamById(id);
+  return examRepository.remove(id);
+}
+
+module.exports = { listExams, getExamById, createExam, updateExam, deleteExam };

@@ -1,32 +1,24 @@
 const submissionService = require('../services/submissionService');
-const catchAsync = require('../utils/catchAsync');
 
-const startExam = catchAsync(async (req, res, next) => {
-  const studentId = req.user.id;
-  const examId = parseInt(req.params.examId, 10);
+async function submitExam(req, res) {
+    try {
+        const { examId, studentId, answers } = req.body;
 
-  const result = await submissionService.startExam(studentId, examId);
+        if (!examId || !studentId || !Array.isArray(answers)) {
+            return res.status(400).json({
+                error: true,
+                message: 'Thiếu examId, studentId, hoặc answers không hợp lệ'
+            });
+        }
 
-  res.status(200).json({
-    status: 'success',
-    data: { submission: result }
-  });
-});
+        const result = await submissionService.submitExam(examId, studentId, answers);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({
+            error: true,
+            message: error.message
+        });
+    }
+}
 
-const submitExam = catchAsync(async (req, res, next) => {
-  const studentId = req.user.id;
-  const examId = parseInt(req.params.examId, 10);
-
-  const result = await submissionService.submitExam(studentId, examId, req.body);
-
-  res.status(200).json({
-    status: 'success',
-    message: 'Nộp bài và chấm điểm thành công!',
-    data: { result }
-  });
-});
-
-module.exports = {
-  startExam,
-  submitExam
-};
+module.exports = { submitExam };

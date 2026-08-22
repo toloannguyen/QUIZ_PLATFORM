@@ -1,19 +1,44 @@
 const express = require('express');
-const examController = require('../controllers/examController');
-const authMiddleware = require('../middlewares/authMiddleware');
-
 const router = express.Router();
 
-// Bắt buộc đăng nhập
-router.use(authMiddleware.protect);
+const examController = require('../controllers/examController');
+const examRepository = require('../repositories/examRepository');
+const { createExamSchema, updateExamSchema } = require('../validations/examValidation');
 
-// 1. Tuyến đường chung: Ai đăng nhập cũng xem được đề thi (Sinh viên & Giáo viên)
-router.get('/:id', examController.getExam);
+const authenticate = require('../middlewares/authMiddleware');
+const requireRole = require('../middlewares/roleMiddleware');
+const requireOwner = require('../middlewares/resourceOwnership');
+const validateRequest = require('../middlewares/validateRequest');
+const asyncHandler = require('../middlewares/asyncHandler');
 
-router.use(authMiddleware.restrictTo('TEACHER'));
+router.use(authenticate);
 
-// 2. Tuyến đường quản trị: Từ đây trở xuống CHỈ Giáo viên mới được đi qua
-router.post('/', examController.createExam);
-router.post('/:examId/questions', examController.createQuestion);
+// Hỗ trợ GET /exams?courseId=1 để lọc theo khóa học
+router.get('/', asyncHandler(examController.list));
+router.get('/:id', asyncHandler(examController.getOne));
+
+// Tạo mới: check ownership của COURSE (không phải Exam, vì Exam chưa tồn tại) — xử lý trong examService
+router.post(
+  '/',
+  requireRole('TEACHER', 'ADMIN'),
+  validateRequest(createExamSchema),
+  asyncHandler(examController.create)
+);
+
+// Sửa/xóa: check ownership của chính Exam đó
+router.patch(
+  '/:id',
+  requireRole('TEACHER', 'ADMIN'),
+  requireOwner((req) => examRepository.getOwnerId(req.params.id)),
+  validateRequest(updateExamSchema),
+  asyncHandler(examController.update)
+);
+
+router.delete(
+  '/:id',
+  requireRole('TEACHER', 'ADMIN'),
+  requireOwner((req) => examRepository.getOwnerId(req.params.id)),
+  asyncHandler(examController.remove)
+);
 
 module.exports = router;

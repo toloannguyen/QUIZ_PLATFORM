@@ -1,37 +1,39 @@
 const authService = require('../services/authService');
-const catchAsync = require('../utils/catchAsync');
 
-const register = catchAsync(async (req, res, next) => {
-  // Giao toàn bộ data cho Service xử lý
-  const result = await authService.registerUser(req.body);
+async function register(req, res) {
+  try {
+    const { name, email, password, role } = req.body;
+    const { user, token } = await authService.register({ name, email, password, role });
+    return res.status(201).json({ user, token });
+  } catch (err) {
+    return handleAuthError(err, res);
+  }
+}
 
-  // Trả kết quả thành công (201 Created)
-  res.status(201).json({
-    status: 'success',
-    data: result,
-  });
-});
+async function login(req, res) {
+  try {
+    const { email, password } = req.body;
+    const { user, token } = await authService.login({ email, password });
+    return res.status(200).json({ user, token });
+  } catch (err) {
+    return handleAuthError(err, res);
+  }
+}
 
-const login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
-
-  // Yêu cầu nhập đủ
-  if (!email || !password) {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'Vui lòng cung cấp email và mật khẩu!',
+function handleAuthError(err, res) {
+  if (err instanceof authService.AuthError) {
+    return res.status(err.statusCode).json({
+      error: true,
+      field: err.field,
+      message: err.message,
     });
   }
-
-  const result = await authService.loginUser(email, password);
-
-  res.status(200).json({
-    status: 'success',
-    data: result,
+  console.error('[Auth] Lỗi không xác định:', err);
+  return res.status(500).json({
+    error: true,
+    field: null,
+    message: 'Lỗi hệ thống, vui lòng thử lại sau',
   });
-});
+}
 
-module.exports = {
-  register,
-  login,
-};
+module.exports = { register, login };

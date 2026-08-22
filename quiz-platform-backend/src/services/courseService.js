@@ -1,68 +1,34 @@
-const { PrismaClient } = require('@prisma/client');
+const courseRepository = require('../repositories/courseRepository');
 const AppError = require('../utils/AppError');
 
-const prisma = new PrismaClient();
+async function listCourses(user) {
+  if (user.role === 'TEACHER') {
+    return courseRepository.findMany({ teacherId: user.id });
+  }
+  // ADMIN và STUDENT thấy toàn bộ khóa học (STUDENT cần thấy để biết mà đăng ký/tham gia)
+  return courseRepository.findMany();
+}
 
-// 1. Tạo khóa học mới (Dành cho Giáo viên)
-const createCourse = async (teacherId, data) => {
-  const { title, description } = data;
-
-  const newCourse = await prisma.course.create({
-    data: {
-      title,
-      description,
-      teacherId, // Lấy ID giáo viên từ token gán vào đây
-    },
-  });
-
-  return newCourse;
-};
-
-// 2. Lấy danh sách toàn bộ khóa học (Dành cho Sinh viên/Giáo viên)
-const getAllCourses = async () => {
-  const courses = await prisma.course.findMany({
-    // Lấy kèm thông tin giáo viên và danh sách bài giảng (JOIN bảng)
-    include: {
-      teacher: {
-        select: { id: true, name: true, email: true }, // Chỉ lấy các trường cần thiết, bỏ password
-      },
-      lectures: {
-        select: { id: true, title: true }, // Chỉ lấy tựa đề bài giảng cho gọn nhẹ
-      },
-    },
-  });
-  return courses;
-};
-
-// 3. Thêm bài giảng vào khóa học
-const createLecture = async (teacherId, courseId, data) => {
-  const { title, description } = data;
-
-  // Kiểm tra xem khóa học có tồn tại và giáo viên này có phải là chủ sở hữu không
-  const course = await prisma.course.findUnique({ where: { id: courseId } });
-  
+async function getCourseById(id) {
+  const course = await courseRepository.findById(id);
   if (!course) {
-    throw new AppError('Không tìm thấy khóa học này!', 404);
+    throw new AppError('Không tìm thấy khóa học', null, 404);
   }
-  
-  if (course.teacherId !== teacherId) {
-    throw new AppError('Bạn không có quyền thêm bài giảng vào khóa học của người khác!', 403);
-  }
+  return course;
+}
 
-  // Tạo bài giảng mới
-  const newLecture = await prisma.lecture.create({
-    data: {
-      title,
-      description,
-      courseId,
-    },
-  });
+async function createCourse({ title, description }, user) {
+  return courseRepository.create({ title, description, teacherId: user.id });
+}
 
-  return newLecture;
-};
+async function updateCourse(id, data) {
+  await getCourseById(id); // ném 404 nếu không tồn tại, trước khi update
+  return courseRepository.update(id, data);
+}
 
-module.exports = {
-  createCourse,
-  getAllCourses,
-  createLecture,
-};
+async function deleteCourse(id) {
+  await getCourseById(id);
+  return courseRepository.remove(id);
+}
+
+module.exports = { listCourses, getCourseById, createCourse, updateCourse, deleteCourse };
