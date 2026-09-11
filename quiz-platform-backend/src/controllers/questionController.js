@@ -5,7 +5,7 @@ async function list(req, res) {
   if (!examId) {
     return res.status(400).json({ error: true, field: 'examId', message: 'Thiếu tham số examId' });
   }
-  const questions = await questionService.getQuestionsForExam(examId, req.user);
+  const questions = await questionService.listQuestions(Number(examId), req.user);
   res.json(questions);
 }
 
@@ -15,8 +15,7 @@ async function getOne(req, res) {
 }
 
 async function create(req, res) {
-  const { examId, ...questionData } = req.body;
-  const question = await questionService.createQuestion(examId, questionData, req.user);
+  const question = await questionService.createQuestion(req.body, req.user);
   res.status(201).json(question);
 }
 

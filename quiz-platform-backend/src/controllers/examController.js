@@ -1,12 +1,14 @@
 const examService = require('../services/examService');
 
+// ===== GIỮ NGUYÊN =====
+
 async function list(req, res) {
   const exams = await examService.listExams(req.user, { courseId: req.query.courseId });
   res.json(exams);
 }
 
 async function getOne(req, res) {
-  const exam = await examService.getExamById(req.params.id);
+  const exam = await examService.getExamById(req.params.id, req.user);
   res.json(exam);
 }
 
@@ -25,4 +27,11 @@ async function remove(req, res) {
   res.status(204).send();
 }
 
-module.exports = { list, getOne, create, update, remove };
+// ===== MỚI =====
+
+async function getForTake(req, res) {
+  const exam = await examService.getExamForTake(req.params.id, req.user);
+  res.json(exam);
+}
+
+module.exports = { list, getOne, create, update, remove, getForTake };

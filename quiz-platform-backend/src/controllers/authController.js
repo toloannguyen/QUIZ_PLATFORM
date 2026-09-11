@@ -2,8 +2,10 @@ const authService = require('../services/authService');
 
 async function register(req, res) {
   try {
-    const { name, email, password, role } = req.body;
-    const { user, token } = await authService.register({ name, email, password, role });
+    // CỐ TÌNH không lấy req.body.role — dù client có gửi lên cũng bị bỏ qua hoàn toàn.
+    // authService.register() hard-code role='STUDENT', xem giải thích trong file đó.
+    const { name, email, password } = req.body;
+    const { user, token } = await authService.register({ name, email, password });
     return res.status(201).json({ user, token });
   } catch (err) {
     return handleAuthError(err, res);

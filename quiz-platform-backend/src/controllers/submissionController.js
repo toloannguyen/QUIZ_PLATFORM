@@ -1,5 +1,14 @@
 const submissionService = require('../services/submissionService');
 
+async function listMySubmissions(req, res) {
+    try {
+        const submissions = await submissionService.listStudentSubmissions(req.user);
+        res.json(submissions);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ error: true, message: error.message });
+    }
+}
+
 async function submitExam(req, res) {
     try {
         const { examId, studentId, answers } = req.body;

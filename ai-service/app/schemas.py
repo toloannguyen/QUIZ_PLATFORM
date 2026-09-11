@@ -3,6 +3,7 @@ from typing import Optional, List, Literal
 
 
 class EvaluateRequest(BaseModel):
+    question_text: Optional[str] = Field(None, max_length=2000, description="Nội dung câu hỏi/đề bài, bắt buộc nếu mode='essay'")
     student_answer: str = Field(..., min_length=1, max_length=5000, description="Câu trả lời của học sinh")
     reference_answer: Optional[str] = Field(None, max_length=5000, description="Đáp án mẫu (nếu có, dùng cho câu hỏi ngắn)")
     course_id: Optional[int] = Field(None, description="ID khóa học, bắt buộc nếu mode='essay'")
@@ -22,14 +23,22 @@ class EvaluateRequest(BaseModel):
             raise ValueError("reference_answer không được chỉ chứa khoảng trắng nếu được cung cấp")
         return v
 
+    @field_validator("question_text")
+    @classmethod
+    def question_text_not_blank(cls, v):
+        if v is not None and v.strip() == "":
+            raise ValueError("question_text không được chỉ chứa khoảng trắng nếu được cung cấp")
+        return v
+
     @model_validator(mode="after")
     def check_required_fields(self):
         if self.mode == "short_answer" and not self.reference_answer:
             raise ValueError("mode 'short_answer' yêu cầu phải có reference_answer")
         if self.mode == "essay" and not self.course_id:
             raise ValueError("mode 'essay' yêu cầu phải có course_id")
+        if self.mode == "essay" and not self.question_text:
+            raise ValueError("mode 'essay' yêu cầu phải có question_text")
         return self
-
 class ReferenceChunk(BaseModel):
     chunk_id: str
     text: str

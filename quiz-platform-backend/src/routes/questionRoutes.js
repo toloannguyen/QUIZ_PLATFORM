@@ -5,8 +5,8 @@ const questionController = require('../controllers/questionController');
 const questionOptionController = require('../controllers/questionOptionController');
 const questionRepository = require('../repositories/questionRepository');
 const questionOptionRepository = require('../repositories/questionOptionRepository');
-const { createQuestionSchema, updateQuestionSchema } = require('../validations/questionValidation');
-const { createOptionSchema, updateOptionSchema } = require('../validations/questionOptionValidation');
+const { createQuestionSchema, updateQuestionSchema } = require('../middlewares/questionValidation');
+const { createOptionSchema, updateOptionSchema } = require('../middlewares/questionOptionValidation');
 
 const authenticate = require('../middlewares/authMiddleware');
 const requireRole = require('../middlewares/roleMiddleware');
@@ -44,7 +44,7 @@ router.delete(
 router.post(
   '/:questionId/options',
   requireRole('TEACHER', 'ADMIN'),
-  requireOwner((req) => questionRepository.getQuestionOwnerId(req.params.questionId)),
+  requireOwner((req) => questionRepository.getOwnerId(req.params.questionId)),
   validateRequest(createOptionSchema),
   asyncHandler(questionOptionController.create)
 );

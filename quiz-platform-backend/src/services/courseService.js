@@ -5,15 +5,29 @@ async function listCourses(user) {
   if (user.role === 'TEACHER') {
     return courseRepository.findMany({ teacherId: user.id });
   }
-  // ADMIN và STUDENT thấy toàn bộ khóa học (STUDENT cần thấy để biết mà đăng ký/tham gia)
+
+  if (user.role === 'STUDENT') {
+    return courseRepository.findMany({ studentId: user.id });
+  }
+
+  // ADMIN thấy toàn bộ khóa học
   return courseRepository.findMany();
 }
 
-async function getCourseById(id) {
+async function getCourseById(id, user = null) {
   const course = await courseRepository.findById(id);
   if (!course) {
     throw new AppError('Không tìm thấy khóa học', null, 404);
   }
+
+  if (user && user.role === 'STUDENT') {
+    const enrolled = await courseRepository.findMany({ studentId: user.id, teacherId: undefined });
+    const hasAccess = enrolled.some((item) => item.id === Number(id));
+    if (!hasAccess) {
+      throw new AppError('Bạn chưa đăng ký khóa học này', null, 403);
+    }
+  }
+
   return course;
 }
 

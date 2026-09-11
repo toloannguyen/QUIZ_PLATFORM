@@ -40,11 +40,12 @@ model User {
   createdAt DateTime @default(now())
 
   // Teacher
-  courses   Course[]
-  exams     Exam[]
+  courses Course[]
+  exams   Exam[]
 
   // Student
   submissions Submission[]
+  enrollments Enrollment[]
 }
 
 model Course {
@@ -53,13 +54,28 @@ model Course {
   description String?  @db.Text
   createdAt   DateTime @default(now())
 
-  teacherId   Int
-  teacher      User @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId Int
+  teacher   User @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   lectures    Lecture[]
   exams       Exam[]
+  enrollments Enrollment[]
 
   @@index([teacherId])
+}
+
+model Enrollment {
+  id         Int      @id @default(autoincrement())
+  studentId  Int
+  courseId   Int
+  enrolledAt DateTime @default(now())
+
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@index([studentId])
+  @@index([courseId])
 }
 
 model Lecture {
@@ -68,95 +84,94 @@ model Lecture {
   description String?  @db.Text
   createdAt   DateTime @default(now())
 
-  courseId    Int
-  course       Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  materials   Material[]
+  materials Material[]
 
   @@index([courseId])
 }
 
 model Material {
-  id           Int      @id @default(autoincrement())
-  title        String
-  fileName     String
-  fileUrl      String
-  fileType     String
-  uploadedAt   DateTime @default(now())
-  lectureId    Int
+  id         Int      @id @default(autoincrement())
+  title      String
+  fileName   String
+  fileUrl    String
+  fileType   String
+  uploadedAt DateTime @default(now())
+  lectureId  Int
 
-  aiProcessed  Boolean  @default(false)
+  aiProcessed  Boolean @default(false)
   aiChunkCount Int?
-  aiError      String?  @db.Text
+  aiError      String? @db.Text
 
-  lecture      Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 
   @@index([lectureId])
 }
 
 model Exam {
-  id            Int      @id @default(autoincrement())
-  title         String
-  description   String?  @db.Text
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String? @db.Text
 
-  duration      Int
-  dueDate       DateTime
+  duration Int
+  dueDate  DateTime
 
   totalQuestion Int?
   totalScore    Float?
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  teacherId      Int
-  courseId       Int
+  teacherId Int
+  courseId  Int
 
-  teacher        User @relation(fields: [teacherId], references: [id])
-  course         Course @relation(fields: [courseId], references: [id])
+  teacher User   @relation(fields: [teacherId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
 
-  questions      Question[]
-  submissions    Submission[]
+  questions   Question[]
+  submissions Submission[]
 
   @@index([teacherId])
   @@index([courseId])
 }
 
 model Question {
-  id             Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  examId         Int
+  examId Int
 
-  orderNumber    Int
-  part           Int
+  orderNumber Int
+  part        Int
 
-  type           QuestionType
+  type QuestionType
 
-  title          String?
-  content        String   @db.LongText
+  title   String?
+  content String  @db.LongText
 
-  maxScore       Float
+  maxScore Float
 
-  correctAnswer  String?  @db.LongText
+  correctAnswer String? @db.LongText
 
-  explanation    String?  @db.Text
+  explanation String? @db.Text
 
-  exam           Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
 
-  options        QuestionOption[]
+  options QuestionOption[]
 
-  answers        SubmissionAnswer[]
+  answers SubmissionAnswer[]
 
   @@index([examId])
 }
 
 model QuestionOption {
+  id Int @id @default(autoincrement())
 
-  id          Int @id @default(autoincrement())
+  questionId Int
 
-  questionId  Int
+  optionText String
 
-  optionText  String
-
-  isCorrect   Boolean
+  isCorrect Boolean
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
@@ -166,26 +181,25 @@ model QuestionOption {
 }
 
 model Submission {
+  id Int @id @default(autoincrement())
 
-  id             Int @id @default(autoincrement())
+  examId Int
 
-  examId         Int
+  studentId Int
 
-  studentId      Int
+  attempt Int @default(1)
 
-  attempt        Int @default(1)
+  startedAt DateTime?
 
-  startedAt      DateTime?
+  submittedAt DateTime @default(now())
 
-  submittedAt    DateTime @default(now())
+  autoScore Float?
 
-  autoScore      Float?
+  teacherScore Float?
 
-  teacherScore   Float?
+  finalScore Float?
 
-  finalScore     Float?
-
-  status         SubmissionStatus @default(PENDING)
+  status SubmissionStatus @default(PENDING)
 
   exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
 
@@ -198,23 +212,23 @@ model Submission {
 }
 
 model SubmissionAnswer {
-  id               Int      @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   submissionId     Int
   questionId       Int
   selectedOptionId Int?
-  answerText       String?  @db.LongText
+  answerText       String? @db.LongText
   autoScore        Float?
   teacherScore     Float?
-  teacherFeedback  String?  @db.Text
+  teacherFeedback  String? @db.Text
 
-  aiLabel          String?
-  aiSimilarity     Float?
-  aiReason         String?  @db.Text
-  aiReferenceInfo  Json?
+  aiLabel         String?
+  aiSimilarity    Float?
+  aiReason        String? @db.Text
+  aiReferenceInfo Json?
 
-  submission       Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  question         Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+  submission     Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
 
   @@index([submissionId])
   @@index([questionId])

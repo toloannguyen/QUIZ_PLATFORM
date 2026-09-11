@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
 
 const SALT_ROUNDS = 10;
-const ALLOWED_ROLES = ['ADMIN', 'TEACHER', 'STUDENT'];
 
 /**
  * Lỗi nghiệp vụ của Auth — controller sẽ dựa vào statusCode/field
@@ -22,7 +21,19 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function register({ name, email, password, role }) {
+/**
+ * QUAN TRỌNG VỀ BẢO MẬT: role KHÔNG được nhận từ client dưới bất kỳ hình thức nào ở đây.
+ * Đăng ký công khai LUÔN LUÔN tạo tài khoản STUDENT — hard-code, không đọc từ req.body.
+ *
+ * Lý do: nếu nhận role từ client (kể cả khi frontend đã ẩn ô chọn role), bất kỳ ai cũng
+ * có thể tự phong mình thành TEACHER chỉ bằng cách gọi thẳng API (Postman/curl) với
+ * body {..., role: "TEACHER"} — ẩn ở giao diện không ngăn được việc gọi trực tiếp API.
+ *
+ * Muốn nâng 1 user từ STUDENT lên TEACHER, phải qua hành động RIÊNG của ADMIN
+ * (hiện làm tay qua Prisma Studio — nếu cần, xây thêm endpoint
+ * PATCH /users/:id/role chỉ ADMIN gọi được, tách biệt hoàn toàn khỏi luồng đăng ký).
+ */
+async function register({ name, email, password }) {
   if (!name || !name.trim()) {
     throw new AuthError('Tên không được để trống', 'name');
   }
@@ -31,9 +42,6 @@ async function register({ name, email, password, role }) {
   }
   if (!password || password.length < 6) {
     throw new AuthError('Mật khẩu phải có ít nhất 6 ký tự', 'password');
-  }
-  if (!role || !ALLOWED_ROLES.includes(role)) {
-    throw new AuthError('Role không hợp lệ (ADMIN | TEACHER | STUDENT)', 'role');
   }
 
   const existing = await userRepository.findByEmail(email);
@@ -46,7 +54,7 @@ async function register({ name, email, password, role }) {
     name: name.trim(),
     email,
     password: hashedPassword,
-    role,
+    role: 'STUDENT', // Hard-code — KHÔNG bao giờ đọc role từ client ở luồng đăng ký công khai
   });
 
   const token = signToken(user);
@@ -60,7 +68,6 @@ async function login({ email, password }) {
 
   const user = await userRepository.findByEmail(email);
   if (!user) {
-    // Cố tình dùng chung message với sai password — tránh lộ thông tin email nào tồn tại
     throw new AuthError('Email hoặc mật khẩu không đúng', null, 401);
   }
 

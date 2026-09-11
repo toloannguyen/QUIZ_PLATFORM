@@ -1,16 +1,42 @@
 const prisma = require('../utils/prismaClient');
 
 async function findById(id) {
-  return prisma.course.findUnique({ where: { id: Number(id) } });
+  return prisma.course.findUnique({
+    where: { id: Number(id) },
+    include: {
+      teacher: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
+  });
 }
 
 /**
  * TEACHER chỉ thấy khóa học của mình, ADMIN/STUDENT thấy tất cả
  * (lọc theo teacherId do service quyết định, repository chỉ nhận filter sẵn).
  */
-async function findMany({ teacherId } = {}) {
+async function findMany({ teacherId, studentId } = {}) {
+  const where = {};
+
+  if (teacherId) {
+    where.teacherId = Number(teacherId);
+  }
+
+  if (studentId) {
+    where.enrollments = {
+      some: {
+        studentId: Number(studentId),
+      },
+    };
+  }
+
   return prisma.course.findMany({
-    where: teacherId ? { teacherId: Number(teacherId) } : undefined,
+    where: Object.keys(where).length ? where : undefined,
     orderBy: { createdAt: 'desc' },
   });
 }

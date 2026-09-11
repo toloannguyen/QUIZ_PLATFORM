@@ -13,9 +13,10 @@ async function evaluateShortAnswer(studentAnswer, referenceAnswer) {
     }
 }
 
-async function evaluateEssayAnswer(studentAnswer, courseId) {
+async function evaluateEssayAnswer(questionText, studentAnswer, courseId) {
     try {
         const response = await aiServiceClient.post('/evaluate', {
+            question_text: questionText,
             student_answer: studentAnswer,
             course_id: courseId,
             mode: 'essay'

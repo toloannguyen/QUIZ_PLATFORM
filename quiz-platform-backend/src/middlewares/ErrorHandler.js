@@ -1,15 +1,9 @@
 /**
- * Error handler tập trung — PHẢI đặt SAU CÙNG trong chuỗi middleware ở server.js
- * (Express nhận diện middleware 4 tham số (err, req, res, next) là error handler).
- *
- * Nhận mọi lỗi được throw trong route (khi dùng asyncHandler) hoặc gọi next(err) thủ công,
- * trả về đúng format { error: true, field, message } — đồng bộ với AI Service.
- *
- * Các custom Error class (vd: AuthError trong authService.js) chỉ cần có sẵn
- * `statusCode` và `field` là handler này tự nhận diện, không cần biết cụ thể là lỗi gì.
+ * Error handler tập trung — PHẢI đặt SAU CÙNG trong chuỗi middleware ở server.js.
+ * Trả về đúng format { error: true, field, message } — đồng bộ với AI Service.
  */
 function errorHandler(err, req, res, next) {
-  // Lỗi Prisma hay gặp nhất khi CRUD: vi phạm unique constraint (vd trùng email)
+  // Vi phạm unique constraint (vd trùng email)
   if (err.code === 'P2002') {
     return res.status(409).json({
       error: true,
@@ -18,12 +12,30 @@ function errorHandler(err, req, res, next) {
     });
   }
 
-  // Lỗi tham chiếu tới bản ghi không tồn tại (vd examId không có thật)
+  // Không tìm thấy bản ghi để update/delete
   if (err.code === 'P2025') {
     return res.status(404).json({
       error: true,
       field: null,
       message: 'Không tìm thấy dữ liệu',
+    });
+  }
+
+  // id truyền vào không phải số hợp lệ (vd GET /courses/abc)
+  if (err.code === 'P2023' || /invalid.*id|argument.*id/i.test(err.message || '')) {
+    return res.status(400).json({
+      error: true,
+      field: 'id',
+      message: 'id không hợp lệ (phải là số)',
+    });
+  }
+
+  // MỚI: lỗi từ Multer khi upload file (file quá lớn) — LIMIT_FILE_SIZE là mã lỗi chuẩn của Multer
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({
+      error: true,
+      field: 'file',
+      message: 'File vượt quá dung lượng cho phép (tối đa 20MB)',
     });
   }
 

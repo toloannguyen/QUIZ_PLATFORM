@@ -13,11 +13,15 @@ const asyncHandler = require('../middlewares/asyncHandler');
 
 router.use(authenticate);
 
-// Hỗ trợ GET /exams?courseId=1 để lọc theo khóa học
 router.get('/', asyncHandler(examController.list));
+
+// MỚI — đặt TRƯỚC '/:id' không bắt buộc (Express phân biệt theo số segment trong path,
+// '/:id/take' có 2 segment còn '/:id' có 1, nên không đụng nhau dù đặt thứ tự nào),
+// nhưng đặt trước cho dễ đọc — route dành cho học sinh lấy đề, đã ẩn đáp án đúng.
+router.get('/:id/take', asyncHandler(examController.getForTake));
+
 router.get('/:id', asyncHandler(examController.getOne));
 
-// Tạo mới: check ownership của COURSE (không phải Exam, vì Exam chưa tồn tại) — xử lý trong examService
 router.post(
   '/',
   requireRole('TEACHER', 'ADMIN'),
@@ -25,7 +29,6 @@ router.post(
   asyncHandler(examController.create)
 );
 
-// Sửa/xóa: check ownership của chính Exam đó
 router.patch(
   '/:id',
   requireRole('TEACHER', 'ADMIN'),

@@ -60,6 +60,10 @@ async function listQuestions(examId, user) {
   return questionRepository.getQuestionsByExamId(examId);
 }
 
+async function getQuestionsForExam(examId, user) {
+  return listQuestions(examId, user);
+}
+
 async function getQuestionById(id) {
   const question = await questionRepository.getQuestionById(id);
   if (!question) {

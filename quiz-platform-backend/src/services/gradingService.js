@@ -2,24 +2,28 @@ const prisma = require('../utils/prismaClient');
 const questionRepository = require('../repositories/questionRepository');
 const { evaluateShortAnswer, evaluateEssayAnswer } = require('./aiEvaluationService');
 
-const SCORE_BANDS = {
-    'Very Good':          { min: 0.85, max: 1.00, threshold: 0.72, ceiling: 1.00 },
-    'Partially Relevant': { min: 0.40, max: 0.70, threshold: 0.40, ceiling: 0.72 },
-    'Not Related':        { min: 0.00, max: 0.15, threshold: 0.00, ceiling: 0.40 }
-};
+// Lưới an toàn: nếu label bị hạ xuống "Not Related" do lớp kiểm tra phủ định/đối nghĩa
+// phát hiện xung đột (dù similarity gốc cao), vẫn ép điểm về mức thấp cố định.
+const CONFLICT_SAFETY_FLOOR_RATIO = 0.10;
+const CONFLICT_SUSPICION_SIMILARITY = 0.50;
 
-function calculateScoreFromLabel(label, similarityScore, maxScore) {
-    const band = SCORE_BANDS[label];
-    if (!band) return 0;
+// Neo 2 đầu theo phân bố thực tế quan sát được (luồng essay, so với chunk dài):
+// similarity <= LOW_ANCHOR  => gần như chắc chắn sai/lạc đề, cho gần 0 điểm
+// similarity >= HIGH_ANCHOR => mức cao nhất thực tế đạt được cho câu đúng, cho gần điểm tối đa
+// Ở giữa: nội suy tuyến tính, không có bước nhảy đột ngột (không còn hiệu ứng "vách đá").
+const LOW_ANCHOR = 0.15;
+const HIGH_ANCHOR = 0.80;
 
-    const { threshold, ceiling, min, max } = band;
+function calculateScore(label, similarityScore, maxScore) {
+    const clamped = Math.max(0, Math.min(1, similarityScore ?? 0));
 
-    const clampedSimilarity = Math.max(threshold, Math.min(ceiling, similarityScore));
-    const normalizedInBand = ceiling > threshold
-        ? (clampedSimilarity - threshold) / (ceiling - threshold)
-        : 0;
+    if (label === 'Not Related' && clamped > CONFLICT_SUSPICION_SIMILARITY) {
+        return Math.round(CONFLICT_SAFETY_FLOOR_RATIO * maxScore * 100) / 100;
+    }
 
-    const ratio = min + normalizedInBand * (max - min);
+    const normalized = (clamped - LOW_ANCHOR) / (HIGH_ANCHOR - LOW_ANCHOR);
+    const ratio = Math.max(0, Math.min(1, normalized));
+
     return Math.round(ratio * maxScore * 100) / 100;
 }
 
@@ -50,7 +54,7 @@ async function gradeShortAnswer(question, answerText) {
     }
 
     return {
-        autoScore: calculateScoreFromLabel(aiResult.label, aiResult.similarity_score, question.maxScore),
+        autoScore: calculateScore(aiResult.label, aiResult.similarity_score, question.maxScore),
         aiLabel: aiResult.label,
         aiSimilarity: aiResult.similarity_score,
         aiReason: aiResult.reason,
@@ -58,8 +62,8 @@ async function gradeShortAnswer(question, answerText) {
     };
 }
 
-async function gradeEssay(question, answerText, courseId) {
-    const aiResult = await evaluateEssayAnswer(answerText, courseId);
+async function gradeEssay(question, questionText, answerText, courseId) {
+    const aiResult = await evaluateEssayAnswer(questionText, answerText, courseId);
 
     if (aiResult.error) {
         return {
@@ -72,7 +76,7 @@ async function gradeEssay(question, answerText, courseId) {
     }
 
     return {
-        autoScore: calculateScoreFromLabel(aiResult.label, aiResult.similarity_score, question.maxScore),
+        autoScore: calculateScore(aiResult.label, aiResult.similarity_score, question.maxScore),
         aiLabel: aiResult.label,
         aiSimilarity: aiResult.similarity_score,
         aiReason: aiResult.reason,
@@ -109,7 +113,8 @@ async function gradeAnswer(question, answerPayload) {
     if (question.type === 'ESSAY') {
         const questionWithCourse = await questionRepository.getQuestionWithCourseInfo(question.id);
         const courseId = questionWithCourse.exam.courseId;
-        const result = await gradeEssay(question, answerPayload.answerText, courseId);
+        const questionText = questionWithCourse.content; // ⚠️ đổi 'content' thành tên field thật trong schema.prisma nếu khác
+        const result = await gradeEssay(question, questionText, answerPayload.answerText, courseId);
         return {
             selectedOptionId: null,
             answerText: answerPayload.answerText,
@@ -121,7 +126,7 @@ async function gradeAnswer(question, answerPayload) {
 }
 
 module.exports = {
-    calculateScoreFromLabel,
+    calculateScore,
     gradeMultipleChoice,
     gradeShortAnswer,
     gradeEssay,

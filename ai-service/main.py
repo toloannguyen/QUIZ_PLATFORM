@@ -1,5 +1,6 @@
 import os
 import shutil
+from unittest import result
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -109,5 +110,5 @@ async def evaluate(request: EvaluateRequest):
         result = classify_answer(request.reference_answer, request.student_answer)
         return EvaluateResponse(**result)
 
-    result = evaluate_essay_answer(request.student_answer, request.course_id)
+    result = evaluate_essay_answer(request.question_text, request.student_answer, request.course_id)
     return EvaluateResponse(**result)

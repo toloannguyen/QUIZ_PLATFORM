@@ -2,28 +2,37 @@ const examRepository = require('../repositories/examRepository');
 const courseRepository = require('../repositories/courseRepository');
 const AppError = require('../utils/AppError');
 
+// ===== GIỮ NGUYÊN — không đổi gì các hàm đã có từ trước =====
+
 async function listExams(user, filters = {}) {
   if (user.role === 'TEACHER') {
     return examRepository.findMany({ teacherId: user.id, courseId: filters.courseId });
   }
-  // ADMIN/STUDENT thấy tất cả (lọc theo courseId nếu có truyền query)
+
+  if (user.role === 'STUDENT') {
+    return examRepository.findMany({ studentId: user.id, courseId: filters.courseId });
+  }
+
   return examRepository.findMany({ courseId: filters.courseId });
 }
 
-async function getExamById(id) {
+async function getExamById(id, user = null) {
   const exam = await examRepository.findById(id);
   if (!exam) {
     throw new AppError('Không tìm thấy đề thi', null, 404);
   }
+
+  if (user && user.role === 'STUDENT') {
+    const enrolledExams = await examRepository.findMany({ studentId: user.id });
+    const hasAccess = enrolledExams.some((item) => item.id === Number(id));
+    if (!hasAccess) {
+      throw new AppError('Bạn chưa đăng ký khóa học chứa đề thi này', null, 403);
+    }
+  }
+
   return exam;
 }
 
-/**
- * Tạo Exam mới. Điểm quan trọng: courseId truyền vào phải thuộc đúng giáo viên
- * đang tạo — nếu không sẽ tạo được đề thi gắn vào khóa học của người khác.
- * requireOwner middleware KHÔNG bắt được lỗi này vì lúc tạo Exam chưa tồn tại,
- * nên phải tự check ở đây, dựa trên teacherId của Course.
- */
 async function createExam(data, user) {
   const course = await courseRepository.findById(data.courseId);
   if (!course) {
@@ -44,8 +53,7 @@ async function createExam(data, user) {
 }
 
 async function updateExam(id, data) {
-  await getExamById(id); // ném 404 nếu không tồn tại
-
+  await getExamById(id);
   const payload = { ...data };
   if (payload.dueDate) {
     payload.dueDate = new Date(payload.dueDate);
@@ -58,4 +66,41 @@ async function deleteExam(id) {
   return examRepository.remove(id);
 }
 
-module.exports = { listExams, getExamById, createExam, updateExam, deleteExam };
+// ===== MỚI — luồng học sinh làm bài =====
+
+/**
+ * Lấy đề thi cho học sinh làm bài — đã ẩn correctAnswer/explanation/isCorrect
+ * ngay từ tầng repository (Prisma select whitelist).
+ *
+ * Có kèm `isExpired` (tính toán, không lưu DB) để frontend tự quyết định có cho
+ * nộp bài nữa hay không — logic chặn nộp bài THẬT SỰ (nếu cần) nên nằm ở
+ * submissionService khi xử lý POST /submissions/submit, không chỉ dựa vào field này.
+ */
+async function getExamForTake(id, user = null) {
+  const exam = await examRepository.findByIdWithQuestionsForStudent(id);
+  if (!exam) {
+    throw new AppError('Không tìm thấy đề thi', null, 404);
+  }
+
+  if (user && user.role === 'STUDENT') {
+    const enrolledExams = await examRepository.findMany({ studentId: user.id });
+    const hasAccess = enrolledExams.some((item) => item.id === Number(id));
+    if (!hasAccess) {
+      throw new AppError('Bạn chưa đăng ký khóa học chứa đề thi này', null, 403);
+    }
+  }
+
+  return {
+    ...exam,
+    isExpired: new Date(exam.dueDate) < new Date(),
+  };
+}
+
+module.exports = {
+  listExams,
+  getExamById,
+  createExam,
+  updateExam,
+  deleteExam,
+  getExamForTake,
+};

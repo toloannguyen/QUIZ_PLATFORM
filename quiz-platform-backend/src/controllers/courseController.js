@@ -6,7 +6,7 @@ async function list(req, res) {
 }
 
 async function getOne(req, res) {
-  const course = await courseService.getCourseById(req.params.id);
+  const course = await courseService.getCourseById(req.params.id, req.user);
   res.json(course);
 }
 

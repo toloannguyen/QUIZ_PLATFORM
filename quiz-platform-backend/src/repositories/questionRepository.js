@@ -27,6 +27,7 @@ async function getQuestionWithCourseInfo(id) {
 async function getQuestionsByExamId(examId) {
   return prisma.question.findMany({
     where: { examId },
+    include: { options: true },
     orderBy: { orderNumber: 'asc' }
   });
 }
@@ -59,6 +60,10 @@ async function getOwnerId(id) {
   return question ? question.exam.teacherId : null;
 }
 
+async function getQuestionOwnerId(id) {
+  return getOwnerId(id);
+}
+
 /**
  * Alias của getQuestionById — services/questionOptionService.js (đã có sẵn trên máy bạn)
  * gọi tên "findById". Thêm alias thay vì bắt bạn sửa lại file đó.
@@ -77,5 +82,6 @@ module.exports = {
   updateQuestion,
   deleteQuestion,
   getOwnerId,
+  getQuestionOwnerId,
   findById,
 };
