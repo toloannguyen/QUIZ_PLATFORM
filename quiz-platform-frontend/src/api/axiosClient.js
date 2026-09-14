@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 15000,
+  timeout: 90000,
 });
 
 // Tự động gắn JWT vào mọi request nếu đã đăng nhập — khớp với authMiddleware.js bên Backend

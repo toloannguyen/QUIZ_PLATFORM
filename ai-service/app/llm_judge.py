@@ -26,7 +26,8 @@ def _call_ollama(system_prompt: str, user_content: str) -> dict:
             {"role": "user", "content": user_content}
         ],
         format="json",
-        options={"temperature": 0}
+        options={"temperature": 0},
+        keep_alive="30m"
     )
     try:
         result = json.loads(response["message"]["content"])
@@ -49,3 +50,22 @@ def evaluate_essay_llm(question_text: str, student_answer: str, reference_chunks
         f"Câu trả lời sinh viên: {student_answer}"
     )
     return _call_ollama(ESSAY_SYSTEM_PROMPT, user_content)
+
+# Thêm vào cuối file llm_judge.py hiện có
+
+SHORT_ANSWER_SYSTEM_PROMPT = """Bạn là giám khảo chấm câu trả lời ngắn của sinh viên, so với đáp án tham khảo.
+So sánh về Ý NGHĨA, không phải độ giống câu chữ.
+
+Lưu ý các lỗi cần tránh:
+- Câu phủ định (VD: "không cần đầu tư") có thể ĐÚNG nghĩa dù cấu trúc câu giống câu sai.
+- Đảo chủ ngữ/tân ngữ (VD: "A quay quanh B" vs "B quay quanh A") là SAI dù từ vựng giống nhau.
+- Đổi số liệu cụ thể (VD: 100 độ C thành 0 độ C) là SAI dù câu còn lại giống hệt.
+
+Trả lời CHỈ bằng JSON, không thêm text nào khác:
+{"label": "Very Good" | "Partially Relevant" | "Not Related", "similarity_estimate": 0.0-1.0, "reason": "giải thích ngắn gọn 1 câu"}"""
+
+
+def evaluate_short_answer_llm(student_answer: str, reference_answer: str) -> dict:
+    user_content = f"Đáp án tham khảo: {reference_answer}\n\nCâu trả lời sinh viên: {student_answer}"
+    return _call_ollama(SHORT_ANSWER_SYSTEM_PROMPT, user_content)
+

@@ -5,7 +5,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-
+from app.scoring import classify_answer_llm
 from app.schemas import EvaluateRequest, EvaluateResponse, UploadReferenceResponse
 from app.scoring import classify_answer
 from app.essay_evaluation import evaluate_essay_answer
@@ -104,10 +104,11 @@ async def upload_reference(file: UploadFile = File(...), course_id: int = 0):
     )
 
 
+
 @app.post("/evaluate", response_model=EvaluateResponse)
 async def evaluate(request: EvaluateRequest):
     if request.mode == "short_answer" or (request.mode == "auto" and request.reference_answer):
-        result = classify_answer(request.reference_answer, request.student_answer)
+        result = classify_answer_llm(request.reference_answer, request.student_answer)
         return EvaluateResponse(**result)
 
     result = evaluate_essay_answer(request.question_text, request.student_answer, request.course_id)

@@ -30,4 +30,4 @@ async function submitExam(req, res) {
     }
 }
 
-module.exports = { submitExam };
+module.exports = { submitExam, listMySubmissions };

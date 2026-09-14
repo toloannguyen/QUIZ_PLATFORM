@@ -103,3 +103,25 @@ def classify_answer(ref_text, student_text, threshold_very_good=THRESHOLD_VERY_G
         "conflict_detected": conflict_detected,
         "reason": reason
     }
+
+# Thêm vào cuối file scoring.py hiện có
+from app.llm_judge import evaluate_short_answer_llm
+
+def classify_answer_llm(ref_text, student_text):
+    """Bản LLM của classify_answer() — dùng cho luồng short_answer.
+    KHÔNG xoá classify_answer() cũ — giữ làm baseline so sánh khi benchmark Ngày 13."""
+    if is_empty_answer(student_text):
+        return {
+            "label": "Not Related",
+            "similarity_score": 0.0,
+            "conflict_detected": False,
+            "reason": "Câu trả lời trống"
+        }
+
+    llm_result = evaluate_short_answer_llm(student_text, ref_text)
+    return {
+        "label": llm_result["label"],
+        "similarity_score": round(float(llm_result["similarity_estimate"]), 4),
+        "conflict_detected": None,
+        "reason": llm_result["reason"]
+    }

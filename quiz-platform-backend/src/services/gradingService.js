@@ -2,8 +2,6 @@ const prisma = require('../utils/prismaClient');
 const questionRepository = require('../repositories/questionRepository');
 const { evaluateShortAnswer, evaluateEssayAnswer } = require('./aiEvaluationService');
 
-// Lưới an toàn: nếu label bị hạ xuống "Not Related" do lớp kiểm tra phủ định/đối nghĩa
-// phát hiện xung đột (dù similarity gốc cao), vẫn ép điểm về mức thấp cố định.
 const CONFLICT_SAFETY_FLOOR_RATIO = 0.10;
 const CONFLICT_SUSPICION_SIMILARITY = 0.50;
 
@@ -13,6 +11,11 @@ const CONFLICT_SUSPICION_SIMILARITY = 0.50;
 // Ở giữa: nội suy tuyến tính, không có bước nhảy đột ngột (không còn hiệu ứng "vách đá").
 const LOW_ANCHOR = 0.15;
 const HIGH_ANCHOR = 0.80;
+
+function calculateShortAnswerScore(similarityScore, maxScore) {
+    const clamped = Math.max(0, Math.min(1, similarityScore ?? 0));
+    return Math.round(clamped * maxScore * 100) / 100;
+}
 
 function calculateScore(label, similarityScore, maxScore) {
     const clamped = Math.max(0, Math.min(1, similarityScore ?? 0));
@@ -54,7 +57,7 @@ async function gradeShortAnswer(question, answerText) {
     }
 
     return {
-        autoScore: calculateScore(aiResult.label, aiResult.similarity_score, question.maxScore),
+        autoScore: calculateShortAnswerScore(aiResult.similarity_score, question.maxScore),
         aiLabel: aiResult.label,
         aiSimilarity: aiResult.similarity_score,
         aiReason: aiResult.reason,
