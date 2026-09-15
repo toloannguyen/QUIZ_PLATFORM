@@ -28,6 +28,7 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [lectureForm, setLectureForm] = useState(EMPTY_LECTURE_FORM);
   const [examForm, setExamForm] = useState(EMPTY_EXAM_FORM);
+  const [showExamForm, setShowExamForm] = useState(false);
   const [lectureError, setLectureError] = useState("");
   const [examError, setExamError] = useState("");
   const [uploadError, setUploadError] = useState("");
@@ -195,12 +196,23 @@ export default function CourseDetailPage() {
                 {course.title}
               </h1>
             </div>
-            <Link
-              to="/courses"
-              className="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900"
-            >
-              Quay lại
-            </Link>
+            <div className="flex items-center gap-2">
+              {isTeacher && (
+                <button
+                  type="button"
+                  onClick={() => setShowExamForm((prev) => !prev)}
+                  className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {showExamForm ? "Đóng tạo đề" : "Thêm đề thi"}
+                </button>
+              )}
+              <Link
+                to="/courses"
+                className="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900"
+              >
+                Quay lại
+              </Link>
+            </div>
           </div>
 
           <div className="rounded-xl bg-slate-50 p-4">
@@ -298,7 +310,7 @@ export default function CourseDetailPage() {
           </div>
         )}
 
-        {isTeacher && (
+        {isTeacher && showExamForm && (
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-xl font-semibold text-slate-800">
               Thêm đề thi
