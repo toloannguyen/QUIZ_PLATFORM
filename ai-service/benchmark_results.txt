@@ -1,0 +1,92 @@
+Đang load Sentence Transformer model...
+Model đã sẵn sàng.
+Tổng số câu test: 36
+
+[1/36] domain=Mô hình OSI | true=Very Good | embedding=Very Good | llm=Very Good (14.0s)
+[2/36] domain=Mô hình OSI | true=Partially Relevant | embedding=Partially Relevant | llm=Partially Relevant (8.8s)
+[3/36] domain=Mô hình OSI | true=Not Related | embedding=Partially Relevant | llm=Not Related (10.5s)
+[4/36] domain=Giao thức TCP | true=Very Good | embedding=Very Good | llm=Very Good (34.6s)
+[5/36] domain=Giao thức TCP | true=Partially Relevant | embedding=Very Good | llm=Partially Relevant (43.8s)
+[6/36] domain=Giao thức TCP | true=Not Related | embedding=Not Related | llm=Partially Relevant (19.2s)
+[7/36] domain=An toàn thông tin (CIA) | true=Very Good | embedding=Very Good | llm=Very Good (18.4s)
+[8/36] domain=An toàn thông tin (CIA) | true=Partially Relevant | embedding=Partially Relevant | llm=Partially Relevant (16.7s)
+[9/36] domain=An toàn thông tin (CIA) | true=Not Related | embedding=Partially Relevant | llm=Not Related (18.0s)
+[10/36] domain=Mã hóa bất đối xứng | true=Very Good | embedding=Very Good | llm=Very Good (61.1s)
+[11/36] domain=Mã hóa bất đối xứng | true=Partially Relevant | embedding=Very Good | llm=Partially Relevant (17.0s)
+[12/36] domain=Mã hóa bất đối xứng | true=Not Related | embedding=Very Good | llm=Partially Relevant (17.8s)
+[13/36] domain=Process vs Thread | true=Very Good | embedding=Very Good | llm=Very Good (23.8s)
+[14/36] domain=Process vs Thread | true=Partially Relevant | embedding=Very Good | llm=Partially Relevant (21.3s)
+[15/36] domain=Process vs Thread | true=Not Related | embedding=Very Good | llm=Partially Relevant (23.7s)
+[16/36] domain=Deadlock | true=Very Good | embedding=Not Related | llm=Very Good (61.3s)
+[17/36] domain=Deadlock | true=Partially Relevant | embedding=Not Related | llm=Partially Relevant (22.7s)
+[18/36] domain=Deadlock | true=Not Related | embedding=Not Related | llm=Partially Relevant (20.0s)
+[19/36] domain=Chuẩn hóa CSDL | true=Very Good | embedding=Very Good | llm=Partially Relevant (44.5s)
+[20/36] domain=Chuẩn hóa CSDL | true=Partially Relevant | embedding=Partially Relevant | llm=Partially Relevant (20.0s)
+[21/36] domain=Chuẩn hóa CSDL | true=Not Related | embedding=Not Related | llm=Not Related (21.2s)
+[22/36] domain=Tính chất ACID | true=Very Good | embedding=Very Good | llm=Very Good (37.6s)
+[23/36] domain=Tính chất ACID | true=Partially Relevant | embedding=Partially Relevant | llm=Partially Relevant (49.6s)
+[24/36] domain=Tính chất ACID | true=Not Related | embedding=Partially Relevant | llm=Partially Relevant (14.7s)
+[25/36] domain=Độ phức tạp thuật toán | true=Very Good | embedding=Very Good | llm=Very Good (18.0s)
+[26/36] domain=Độ phức tạp thuật toán | true=Partially Relevant | embedding=Very Good | llm=Partially Relevant (18.3s)
+[27/36] domain=Độ phức tạp thuật toán | true=Not Related | embedding=Very Good | llm=Partially Relevant (11.1s)
+[28/36] domain=Stack vs Queue | true=Very Good | embedding=Very Good | llm=Very Good (20.7s)
+[29/36] domain=Stack vs Queue | true=Partially Relevant | embedding=Partially Relevant | llm=Partially Relevant (17.0s)
+[30/36] domain=Stack vs Queue | true=Not Related | embedding=Very Good | llm=Not Related (17.0s)
+[31/36] domain=AI/ML/DL | true=Very Good | embedding=Very Good | llm=Very Good (32.2s)
+[32/36] domain=AI/ML/DL | true=Partially Relevant | embedding=Partially Relevant | llm=Partially Relevant (24.7s)
+[33/36] domain=AI/ML/DL | true=Not Related | embedding=Very Good | llm=Partially Relevant (17.3s)
+[34/36] domain=Agile vs Waterfall | true=Very Good | embedding=Very Good | llm=Very Good (17.8s)
+[35/36] domain=Agile vs Waterfall | true=Partially Relevant | embedding=Very Good | llm=Partially Relevant (18.2s)
+[36/36] domain=Agile vs Waterfall | true=Not Related | embedding=Very Good | llm=Partially Relevant (22.9s)
+
+============================================================
+SENTENCE TRANSFORMER — báo cáo tổng
+============================================================
+                    precision    recall  f1-score   support
+
+       Not Related       0.60      0.25      0.35        12
+Partially Relevant       0.67      0.50      0.57        12
+         Very Good       0.50      0.92      0.65        12
+
+          accuracy                           0.56        36
+         macro avg       0.59      0.56      0.52        36
+      weighted avg       0.59      0.56      0.52        36
+
+Confusion matrix:
+[[11  0  1]
+ [ 5  6  1]
+ [ 6  3  3]]
+
+============================================================
+LLM-AS-JUDGE — báo cáo tổng
+============================================================
+                    precision    recall  f1-score   support
+
+       Not Related       1.00      0.33      0.50        12
+Partially Relevant       0.57      1.00      0.73        12
+         Very Good       1.00      0.92      0.96        12
+
+          accuracy                           0.75        36
+         macro avg       0.86      0.75      0.73        36
+      weighted avg       0.86      0.75      0.73        36
+
+Confusion matrix:
+[[11  1  0]
+ [ 0 12  0]
+ [ 0  8  4]]
+
+Latency trung bình LLM: 24.31s (min=8.78s, max=61.33s)
+
+============================================================
+ĐỘ CHÍNH XÁC THEO TỪNG NHÓM LỖI (failure_mode)
+============================================================
+               n  embedding_accuracy  llm_accuracy
+failure_mode                                      
+antonym        5               0.000         0.200
+incomplete    12               0.500         1.000
+negation       2               1.000         0.500
+numeric        4               0.250         0.250
+paraphrase    12               0.917         0.917
+wrong          1               0.000         1.000
+
+Đã lưu chi tiết từng câu vào benchmark_output_detailed.csv
