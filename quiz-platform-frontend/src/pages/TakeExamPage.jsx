@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getExamTake } from '../api/examApi';
-import { submitExam, getMySubmissions } from '../api/submissionApi';
+import { submitExam } from '../api/submissionApi';
 
 export default function TakeExamPage() {
   const { id } = useParams();
@@ -12,7 +12,6 @@ export default function TakeExamPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
-  const [history, setHistory] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -28,15 +27,6 @@ export default function TakeExamPage() {
     }
 
     loadExam();
-    // load user's submission history
-    (async () => {
-      try {
-        const h = await getMySubmissions();
-        setHistory(h.data || []);
-      } catch (e) {
-        // ignore errors – history is optional
-      }
-    })();
   }, [id]);
 
   const sortedQuestions = useMemo(() => {
@@ -77,13 +67,6 @@ export default function TakeExamPage() {
       setError('');
       const res = await submitExam({ examId: Number(id), studentId: Number(user.id), answers: payload });
       setResult(res.data);
-      // refresh history after successful submit
-      try {
-        const h = await getMySubmissions();
-        setHistory(h.data || []);
-      } catch (e) {
-        // ignore
-      }
     } catch (err) {
       setError(err.response?.data?.message || 'Nộp bài thất bại');
     } finally {
@@ -117,7 +100,6 @@ export default function TakeExamPage() {
         {result && (
           <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-green-800">
             <p className="font-semibold">Nộp bài thành công</p>
-            <p className="mt-1 text-sm">Submission ID: {result.submissionId}</p>
             <p className="text-sm">Status: {result.status}</p>
 
             {/* Group answers by part and show per-part subtotals */}
@@ -161,10 +143,6 @@ export default function TakeExamPage() {
                               <p className="mt-2">AI: <span className="font-medium">{answer.aiLabel}</span></p>
                             )}
 
-                            {answer.aiSimilarity !== null && answer.aiSimilarity !== undefined && (
-                              <p className="mt-1 text-xs text-slate-600">Độ tương đồng: {(Number(answer.aiSimilarity) * 100).toFixed(1)}%</p>
-                            )}
-
                             {(() => {
                               const skipMsg = 'Lớp kiểm tra phủ định không áp dụng cho tài liệu dài (độ tin cậy thấp)';
                               const cleaned = answer.aiReason ? String(answer.aiReason).replace(skipMsg, '').trim() : '';
@@ -186,29 +164,6 @@ export default function TakeExamPage() {
             </div>
           </div>
         )}
-
-        {/* Submission history (student) */}
-        <div className="mb-6">
-          <h3 className="mb-2 text-sm font-medium text-slate-700">Lịch sử nộp bài</h3>
-          <div className="space-y-2">
-            {history && history.length > 0 ? (
-              history.map((s) => (
-                <div key={s.id} className="flex items-center justify-between rounded border border-slate-200 bg-white p-3 text-sm">
-                  <div>
-                    <div className="font-medium text-slate-800">{s.exam?.title || 'Đề thi'}</div>
-                    <div className="text-xs text-slate-500">{new Date(s.submittedAt || s.startedAt).toLocaleString()}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold">{Number(s.autoScore ?? s.finalScore ?? s.totalScore ?? 0).toFixed(2)} điểm</div>
-                    <div className="text-xs text-slate-500">{s.status}</div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="rounded border border-slate-200 bg-white p-3 text-sm text-slate-500">Bạn chưa có bài nộp nào.</div>
-            )}
-          </div>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {sortedQuestions.map((question, index) => (

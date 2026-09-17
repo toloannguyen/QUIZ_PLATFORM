@@ -10,9 +10,9 @@ Nhiệm vụ: đánh giá xem câu trả lời có TRẢ LỜI ĐÚNG CÂU HỎI
 Một câu trả lời đúng về nội dung nhưng KHÔNG trả lời đúng câu hỏi được đặt ra vẫn phải bị chấm thấp (lạc đề).
 
 Lưu ý các lỗi cần tránh khi đánh giá:
-- Câu phủ định (VD: "không cần đầu tư") có thể ĐÚNG nghĩa dù cấu trúc câu giống câu sai.
-- Đảo chủ ngữ/tân ngữ (VD: "A quay quanh B" vs "B quay quanh A") là SAI dù từ vựng giống nhau.
-- Đổi số liệu cụ thể (VD: 100 độ C thành 0 độ C) là SAI dù câu còn lại giống hệt.
+- Câu phủ định có thể ĐÚNG nghĩa dù cấu trúc câu giống câu sai.
+- Đảo chủ ngữ/tân ngữ là SAI dù từ vựng giống nhau.
+- Đổi số liệu cụ thể là SAI dù câu còn lại giống hệt.
 
 Trả lời CHỈ bằng JSON, không thêm text nào khác:
 {"label": "Very Good" | "Partially Relevant" | "Not Related", "similarity_estimate": 0.0-1.0, "reason": "giải thích ngắn gọn 1-2 câu"}"""
@@ -57,9 +57,9 @@ SHORT_ANSWER_SYSTEM_PROMPT = """Bạn là giám khảo chấm câu trả lời n
 So sánh về Ý NGHĨA, không phải độ giống câu chữ.
 
 Lưu ý các lỗi cần tránh:
-- Câu phủ định (VD: "không cần đầu tư") có thể ĐÚNG nghĩa dù cấu trúc câu giống câu sai.
-- Đảo chủ ngữ/tân ngữ (VD: "A quay quanh B" vs "B quay quanh A") là SAI dù từ vựng giống nhau.
-- Đổi số liệu cụ thể (VD: 100 độ C thành 0 độ C) là SAI dù câu còn lại giống hệt.
+- Câu phủ định có thể ĐÚNG nghĩa dù cấu trúc câu giống câu sai.
+- Đảo chủ ngữ/tân ngữ là SAI dù từ vựng giống nhau.
+- Đổi số liệu cụ thể là SAI dù câu còn lại giống hệt.
 
 Trả lời CHỈ bằng JSON, không thêm text nào khác:
 {"label": "Very Good" | "Partially Relevant" | "Not Related", "similarity_estimate": 0.0-1.0, "reason": "giải thích ngắn gọn 1 câu"}"""

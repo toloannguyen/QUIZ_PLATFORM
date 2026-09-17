@@ -41,7 +41,6 @@ export default function HomePage() {
             <Link to="/" className="font-medium text-blue-600">Trang chủ</Link>
             <Link to="/courses">Khóa học</Link>
             <Link to="/exams">Đề thi</Link>
-            <Link to="/my-submissions">Lịch sử nộp</Link>
             <button
               onClick={logout}
               className="rounded bg-red-500 px-3 py-2 text-white hover:bg-red-600"
