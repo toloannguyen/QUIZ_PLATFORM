@@ -59,6 +59,9 @@ class EvaluateResponse(BaseModel):
     reason: Optional[str] = None
     reference_chunks: Optional[List[ReferenceChunk]] = None
     primary_source: Optional[PrimarySource] = None
+    cited_chunk_ids: Optional[List[str]] = Field(default=None, description="Danh sách chunk id LLM trích dẫn trong đánh giá")
+    citation_valid: Optional[bool] = Field(default=None, description="True nếu tất cả chunk LLM trích dẫn đều thuộc retrieved_chunk_ids")
+    citation_warning: Optional[str] = Field(default=None, description="Cảnh báo khi LLM trích dẫn chunk không tồn tại trong retrieved set")
 
 
 class UploadReferenceResponse(BaseModel):

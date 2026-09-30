@@ -5,6 +5,25 @@ from app.vector_store import retrieve_relevant_chunks
 from app.llm_judge import evaluate_essay_llm
 
 
+def verify_cited_chunk_ids(cited_chunk_ids, retrieved_chunks):
+    retrieved_ids = {chunk['chunk_id'] for chunk in retrieved_chunks}
+    cited_ids = set(cited_chunk_ids or [])
+    invalid_ids = sorted(cited_ids - retrieved_ids)
+
+    if invalid_ids:
+        return {
+            "citation_valid": False,
+            "citation_warning": f"LLM trích dẫn chunk không tồn tại trong retrieved set: {', '.join(invalid_ids)}",
+            "invalid_ids": invalid_ids,
+        }
+
+    return {
+        "citation_valid": True,
+        "citation_warning": None,
+        "invalid_ids": [],
+    }
+
+
 def evaluate_essay_answer(question_text, student_answer, course_id, top_k=3,
                            method="llm",
                            threshold_very_good=THRESHOLD_VERY_GOOD,
@@ -17,7 +36,10 @@ def evaluate_essay_answer(question_text, student_answer, course_id, top_k=3,
             "similarity_score": 0.0,
             "conflict_detected": False,
             "reason": "Câu trả lời trống",
-            "reference_chunks": []
+            "reference_chunks": [],
+            "cited_chunk_ids": [],
+            "citation_valid": True,
+            "citation_warning": None,
         }
 
     # Retrieval dựa trên CÂU HỎI, không phải câu trả lời học sinh
@@ -29,7 +51,10 @@ def evaluate_essay_answer(question_text, student_answer, course_id, top_k=3,
             "similarity_score": 0.0,
             "conflict_detected": False,
             "reason": "Không tìm thấy nội dung tài liệu liên quan tới câu hỏi này",
-            "reference_chunks": chunks
+            "reference_chunks": chunks,
+            "cited_chunk_ids": [],
+            "citation_valid": True,
+            "citation_warning": None,
         }
 
     best_chunk = chunks[0]
@@ -38,7 +63,15 @@ def evaluate_essay_answer(question_text, student_answer, course_id, top_k=3,
         llm_result = evaluate_essay_llm(question_text, student_answer, chunks)
         label = llm_result["label"]
         similarity_score = round(float(llm_result["similarity_estimate"]), 4)
-        reason = llm_result["reason"]
+        cited_chunk_ids = llm_result.get("cited_chunk_ids", [])
+        citation_check = verify_cited_chunk_ids(cited_chunk_ids, chunks)
+
+        if not citation_check["citation_valid"]:
+            reason = citation_check["citation_warning"]
+            label = "Not Related"
+            similarity_score = 0.0
+        else:
+            reason = llm_result["reason"]
         conflict_detected = None
     else:  # method == "embedding" — pipeline cũ, giữ lại để benchmark Ngày 13
         answer_similarity = compute_semantic_similarity(best_chunk['text'], student_answer)
@@ -46,6 +79,8 @@ def evaluate_essay_answer(question_text, student_answer, course_id, top_k=3,
         similarity_score = round(float(answer_similarity), 4)
         reason = "Lớp kiểm tra phủ định không áp dụng cho tài liệu dài (độ tin cậy thấp)"
         conflict_detected = None
+        cited_chunk_ids = [best_chunk['chunk_id']]
+        citation_check = {"citation_valid": True, "citation_warning": None}
 
     return {
         "label": label,
@@ -56,5 +91,8 @@ def evaluate_essay_answer(question_text, student_answer, course_id, top_k=3,
         "primary_source": {
             "page_number": best_chunk['page_number'],
             "source_file": best_chunk['source_file']
-        }
+        },
+        "cited_chunk_ids": cited_chunk_ids if method == "llm" else [best_chunk['chunk_id']],
+        "citation_valid": citation_check["citation_valid"],
+        "citation_warning": citation_check["citation_warning"],
     }

@@ -3,6 +3,12 @@ import chromadb
 from app.scoring import model
 
 
+ACTIVE_STATUS = "ACTIVE"
+ARCHIVED_STATUS = "ARCHIVED"
+ACTIVE_COURSE_STATUS = "ACTIVE"
+ENDED_COURSE_STATUS = "ENDED"
+
+
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
 collection = chroma_client.get_or_create_collection(
     name="giao_an_collection",
@@ -10,18 +16,21 @@ collection = chroma_client.get_or_create_collection(
 )
 
 
+def _chunk_metadata(chunk, course_id, status=ACTIVE_STATUS, course_status=ACTIVE_COURSE_STATUS):
+    return {
+        "source_file": chunk['source_file'],
+        "page_number": chunk['page_number'],
+        "chunk_index": chunk['chunk_index'],
+        "course_id": str(course_id),
+        "status": status,
+        "course_status": course_status,
+    }
+
+
 def add_document_to_db(chunks, course_id):
     ids = [c['chunk_id'] for c in chunks]
     documents = [c['text'] for c in chunks]
-    metadatas = [
-        {
-            "source_file": c['source_file'],
-            "page_number": c['page_number'],
-            "chunk_index": c['chunk_index'],
-            "course_id": str(course_id)
-        }
-        for c in chunks
-    ]
+    metadatas = [_chunk_metadata(c, course_id) for c in chunks]
 
     embeddings = model.encode(documents).tolist()
 
@@ -39,13 +48,42 @@ def add_document_to_db(chunks, course_id):
     }
 
 
+def archive_course_chunks(course_id, course_status=ENDED_COURSE_STATUS, status=ARCHIVED_STATUS):
+    chunk_records = collection.get(
+        where={"course_id": str(course_id)},
+        include=["metadatas", "ids"]
+    )
+
+    ids = chunk_records.get("ids", [])
+    metadatas = chunk_records.get("metadatas", [])
+
+    if not ids:
+        return {"updated": 0, "course_id": course_id}
+
+    updated_metadatas = []
+    for metadata in metadatas:
+        current = dict(metadata or {})
+        current["status"] = status
+        current["course_status"] = course_status
+        updated_metadatas.append(current)
+
+    collection.update(ids=ids, metadatas=updated_metadatas)
+    return {"updated": len(ids), "course_id": course_id, "status": status, "course_status": course_status}
+
+
 def retrieve_relevant_chunks(student_answer, course_id, top_k=3):
     query_embedding = model.encode([student_answer]).tolist()
 
     results = collection.query(
         query_embeddings=query_embedding,
         n_results=top_k,
-        where={"course_id": str(course_id)}
+        where={
+            "$and": [
+                {"course_id": str(course_id)},
+                {"status": ACTIVE_STATUS},
+                {"course_status": ACTIVE_COURSE_STATUS},
+            ]
+        }
     )
 
     chunks = []
